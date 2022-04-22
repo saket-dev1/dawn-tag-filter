@@ -1,0 +1,49 @@
+#html tag code
+
+<div class="tag-filter block">
+  <div class="facet-filters__field">
+    <h2 class="facet-filters__label caption-large text-body">
+      <label for="#tagFilter">Browse by tag</label>
+    </h2>
+
+    <div class="select">
+      <select class="tagFilter filter select__select caption-large" id="tagFilter">
+        <option value="/collections/{{ collection.handle }}">All</option>
+        {%- for tag in collection.all_tags -%}
+        {%- if current_tags contains tag -%}
+        <option value="/collections/{{ collection.handle }}/{{ tag | handle }}" selected>{{ tag }}</option>
+        {%- else -%}
+        <option value="/collections/{{ collection.handle }}/{{ tag | handle }}">{{ tag }}</option>
+        {%- endif -%}
+        {%- endfor -%}
+      </select>
+    </div>
+  </div>
+</div>
+
+#js filter code
+
+document.getElementById('tagFilter').addEventListener('change', function(event) {
+  let searchParams = this.value;
+  
+  FacetFiltersForm.searchParamsPrev = searchParams;
+  const sections = FacetFiltersForm.getSections();
+  const countContainer = document.getElementById('ProductCount');
+  const countContainerDesktop = document.getElementById('ProductCountDesktop');
+  document.getElementById('ProductGridContainer').querySelector('.collection').classList.add('loading');
+  if (countContainer){
+    countContainer.classList.add('loading');
+  }
+  if (countContainerDesktop){
+    countContainerDesktop.classList.add('loading');
+  }
+
+  sections.forEach((section) => {
+    const url = `${this.value}?section_id=${section.section}`;
+    const filterDataUrl = element => element.url === url;
+
+    FacetFiltersForm.filterData.some(filterDataUrl) ?
+      FacetFiltersForm.renderSectionFromCache(filterDataUrl, event) :
+    FacetFiltersForm.renderSectionFromFetch(url, event);
+  });
+});
